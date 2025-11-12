@@ -15,7 +15,7 @@ LAB SETUP INSTRUCTIONS
    Run either of these commands:
       npm i
       OR
-      npm install
+      npm installs
       npm install express cors
 
 3. Start the back-end server from terminal, path: 6-3-express-request-data-Dromarjh-main\6-3-express-request-data:
@@ -109,18 +109,56 @@ const app = express();
 
 
 // create server
+app.get("/", (req, res) => {
+  res.json({ ok: true, msg: "API is up" });
+});
 
+app.listen(3000, () => {
+  console.log("API running at http://localhost:3000");
+});
 
 // Query params: /echo?name=Ali&age=22
+
+app.get("/echo", (req, res) => {
+  const { name, age } = req.query; // read from URL query string
+
+  // if name or age missing
+  if (!name || !age) {
+    return res.status(400).json({ ok: false, error: "name & age required" });
+  }
+
+  // success response
+  res.json({ ok: true, name, age, msg: `Hello ${name}, you are ${age}` });
+});
 
 
 // Route params: /profile/First/Last
 
+app.get("/profile/:first/:last", (req, res) => {
+  const { first, last } = req.params; 
+  res.json({ ok: true, fullName: `${first} ${last}` });
+});
 
 // Route param middleware example: /users/42
 
+app.param("userId", (req, res, next, userId) => {
+  const idNum = Number(userId); // convert to number
+
+  // check if it's a positive number
+  if (isNaN(idNum) || idNum <= 0) {
+    return res.status(400).json({ ok: false, error: "userId must be positive number" });
+  }
+
+  // store it for later routes
+  req.userIdNum = idNum;
+  next(); // continue to the route
+});
 
 // Route params: /users/:userId route
+app.get("/users/:userId", (req, res) => {
+  // use the validated value stored by app.param()
+  res.json({ ok: true, userId: req.userIdNum });
+});
 
 
 
